@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "poetry shell"
+version = "0.1.0"
+description = "Biblioteca para transferir dados do Redis ao PostGreSQL"
+authors = ["Daniel, Francinaldo, Luis, Rita, Iago, Cristina"]
+license = "Forca Jedi"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.9.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
