@@ -8,6 +8,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         "redis",
+        
     ],
-    python_requires=">=3.9.0",
+    python_requires=">=3.9.13",
 )

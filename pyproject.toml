@@ -1,13 +1,18 @@
 [tool.poetry]
-name = "transfer-info"
-version = "0.1.0"
-description = "Biblioteca para transferir dados do Redis ao PostGreSQL"
-authors = ["Daniel, Francinaldo, Luis, Rita, Iago, Cristina"]
+name = "transfer-infos"
+version = "1.0"
+description = "Pacote para Transferir dados do Redis ao PostGreSQL"
+authors = ["Daniel, Francinaldo, Luis, Iago, Rita, Cristina"]
 license = "Forca Jedi"
 readme = "README.md"
+packages = [
+    { include = "library", from = "src" }
+]
+
 
 [tool.poetry.dependencies]
-python = "3.9.0"
+python = "3.9.21"
+requests = "2.25"
 
 
 [build-system]
