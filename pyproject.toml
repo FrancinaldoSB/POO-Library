@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "poetry shell"
+name = "transfer-info"
 version = "0.1.0"
 description = "Biblioteca para transferir dados do Redis ao PostGreSQL"
 authors = ["Daniel, Francinaldo, Luis, Rita, Iago, Cristina"]
