@@ -8,7 +8,22 @@ from queue import Queue
 from library.transfer_info import tranferirinfos
 
 class Connections:
+    """
+    A classe Connections é responsável por gerenciar as conexões com o Redis e o PostgreSQL.
+    
+    Attributes:
+        dbRedis (redis.Redis): Instância da conexão com o Redis.
+        dbPostgre (psycopg2.connection): Instância da conexão com o PostgreSQL.
+    """
+    
     def __init__(self):
+        """
+        Inicializa as conexões com Redis e PostgreSQL. Se a conexão com PostgreSQL falhar,
+        o código tenta novamente até conseguir.
+
+        Parameters:
+            None
+        """
         # Conexão com Redis
         redis_host = os.getenv('HOST_TO_REDIS', 'localhost')
         self.dbRedis = redis.Redis(host=redis_host, port=6379, decode_responses=True)
@@ -31,11 +46,42 @@ class Connections:
                 sleep(2)
 
     def fecharConexoes(self):
+        """
+        Fecha as conexões com o Redis e PostgreSQL.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         self.dbRedis.close()
         self.dbPostgre.close()
 
+
 class DataTransfer:
+    """
+    A classe DataTransfer é responsável por transferir dados do Redis para o PostgreSQL,
+    utilizando multithreading e processamento em lotes.
+
+    Attributes:
+        redis_conn (redis.Redis): Conexão com o Redis.
+        postgres_conn (psycopg2.connection): Conexão com o PostgreSQL.
+        num_threads (int): Número de threads a serem usadas para a transferência.
+        batch_size (int): Tamanho dos lotes a serem processados em cada thread.
+        task_queue (Queue): Fila de tarefas para os trabalhadores (threads).
+    """
+
     def __init__(self, redis_conn, postgres_conn, num_threads=2, batch_size=10000):
+        """
+        Inicializa a transferência de dados com as conexões e configurações fornecidas.
+
+        Parameters:
+            redis_conn (redis.Redis): Conexão com o Redis.
+            postgres_conn (psycopg2.connection): Conexão com o PostgreSQL.
+            num_threads (int): Número de threads a serem usadas (padrão: 2).
+            batch_size (int): Tamanho dos lotes a serem processados (padrão: 10000).
+        """
         self.redis_conn = redis_conn
         self.postgres_conn = postgres_conn
         self.num_threads = num_threads
@@ -43,6 +89,15 @@ class DataTransfer:
         self.task_queue = Queue()
 
     def criarTabela(self):
+        """
+        Cria a tabela no PostgreSQL para armazenar os dados transferidos, caso ela ainda não exista.
+        
+        Parameters:
+            None
+        
+        Returns:
+            None
+        """
         cursor = self.postgres_conn.cursor()
 
         cursor.execute("""
@@ -62,6 +117,16 @@ class DataTransfer:
         cursor.close()
 
     def transferirLote(self, batch_start, batch_end):
+        """
+        Transferir um lote de dados do Redis para o PostgreSQL.
+
+        Parameters:
+            batch_start (int): O índice inicial do lote.
+            batch_end (int): O índice final do lote.
+
+        Returns:
+            None
+        """
         cursor = self.postgres_conn.cursor()
         try:
             for i in range(batch_start, batch_end):
@@ -84,6 +149,15 @@ class DataTransfer:
             cursor.close()
 
     def worker(self):
+        """
+        Função de trabalho executada pelas threads para processar os lotes de dados.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        """
         while not self.task_queue.empty():
             batch_start, batch_end = self.task_queue.get()
             print(f"Thread {threading.current_thread().name} processando lote {batch_start}-{batch_end}")
@@ -92,6 +166,18 @@ class DataTransfer:
 
 
 if __name__ == "__main__":
+    """
+    Executa a transferência de dados do Redis para o PostgreSQL.
+
+    Estabelece as conexões com Redis e PostgreSQL, cria a tabela no PostgreSQL e
+    chama a função `tranferirinfos` para transferir os dados em lotes.
+
+    Parameters:
+        None
+    
+    Returns:
+        None
+    """
     conexoes = Connections()
 
     transferencia = DataTransfer(conexoes.dbRedis, conexoes.dbPostgre, num_threads=2, batch_size=10000)
