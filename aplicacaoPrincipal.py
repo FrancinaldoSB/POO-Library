@@ -7,17 +7,17 @@ class Postgre:
         Classe responsável por gerenciar a conexão e operações no banco de dados PostgreSQL.
     
     methods
-        CriarTabela()
+        criar_tabela()
             Cria a tabela 'pacotes' no banco de dados.
-        inserirPacote(destino, origem, peso, tamanho)
+        inserir_pacote(destino, origem, peso, tamanho)
             Insere um novo pacote na tabela 'pacotes'.
-        consultarPacotes()
+        consultar_pacotes()
             Retorna todos os pacotes armazenados no banco de dados.
-        atualizarPacote(destino, peso_novo, tamanho_novo)
+        atualizar_pacote(destino, peso_novo, tamanho_novo)
             Atualiza o peso e tamanho de um pacote com base no destino.
-        deletarPacote(destino)
+        deletar_pacote(destino)
             Remove um pacote da tabela com base no destino.
-        fecharConexao()
+        fechar_conexao()
             Fecha a conexão com o banco de dados PostgreSQL.
     """
     def __init__(self) -> None:
@@ -28,7 +28,7 @@ class Postgre:
         parameters
             None
         """
-        self.dbPostgre = self.connect_to_db()
+        self.db_postgre = self.connect_to_db()
 
     def connect_to_db(self):
         """
@@ -36,11 +36,11 @@ class Postgre:
         """
         try:
             return pg.connect(
-                dbname="mydatabase",  # Nome do banco de dados
-                user="root",          # Usuário do banco de dados
-                password="root",      # Senha do banco de dados
-                host="localhost",     # Host onde o banco está rodando
-                port="5432"           # Porta de conexão do PostgreSQL
+                dbname="mydatabase",
+                user="root",
+                password="root",
+                host="localhost",
+                port="5432"
             )
         except OperationalError as e:
             print(f"Erro de conexão com o banco de dados: {e}")
@@ -50,23 +50,16 @@ class Postgre:
         """
         Garante que a conexão com o banco de dados esteja ativa. Se não, tenta reconectar.
         """
-        if self.dbPostgre is None or self.dbPostgre.closed:
+        if self.db_postgre is None or self.db_postgre.closed:
             print("Tentando reconectar ao banco de dados...")
-            self.dbPostgre = self.connect_to_db()
+            self.db_postgre = self.connect_to_db()
 
-    def CriarTabela(self) -> None:
+    def criar_tabela(self) -> None:
         """
-        summary
-            Cria a tabela 'pacotes' no banco de dados, caso não exista.
-        
-        parameters
-            None
-        
-        return
-            None
+        Cria a tabela 'pacotes' no banco de dados, caso não exista.
         """
-        self.garantir_conexao()  # Garante que a conexão está ativa
-        cursor = self.dbPostgre.cursor()
+        self.garantir_conexao()
+        cursor = self.db_postgre.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS pacotes (
                 Destino VARCHAR(50),
@@ -75,79 +68,44 @@ class Postgre:
                 Tamanho VARCHAR(50)
             )
         """)
-        self.dbPostgre.commit()
+        self.db_postgre.commit()
         cursor.close()
 
-    def inserirPacote(self, destino, origem, peso, tamanho) -> None:
+    def inserir_pacote(self, destino, origem, peso, tamanho) -> None:
         """
-        summary
-            Insere um novo pacote no banco de dados.
-        
-        parameters
-            destino : str
-                Destino do pacote.
-            origem : str
-                Origem do pacote.
-            peso : str
-                Peso do pacote.
-            tamanho : str
-                Tamanho do pacote.
-        
-        return
-            None
+        Insere um novo pacote no banco de dados.
         """
-        self.garantir_conexao()  # Garante que a conexão está ativa
-        cursor = self.dbPostgre.cursor()
+        self.garantir_conexao()
+        cursor = self.db_postgre.cursor()
         try:
             cursor.execute("""
                 INSERT INTO pacotes (Destino, Origem, Peso, Tamanho) 
                 VALUES (%s, %s, %s, %s)
             """, (destino, origem, peso, tamanho))
-            self.dbPostgre.commit()
+            self.db_postgre.commit()
         except Exception as e:
             print(f"Erro ao inserir pacote: {e}")
-            self.dbPostgre.rollback()
+            self.db_postgre.rollback()
         finally:
             cursor.close()
 
-    def consultarPacotes(self) -> list:
+    def consultar_pacotes(self) -> list:
         """
-        summary
-            Consulta e retorna todos os pacotes cadastrados na tabela.
-        
-        parameters
-            None
-        
-        return
-            list
-                Lista com os pacotes cadastrados.
+        Consulta e retorna todos os pacotes cadastrados na tabela.
         """
-        self.garantir_conexao()  # Garante que a conexão está ativa
-        cursor = self.dbPostgre.cursor()
+        self.garantir_conexao()
+        cursor = self.db_postgre.cursor()
         cursor.execute("SELECT * FROM pacotes")
         pacotes = cursor.fetchall()
         cursor.close()
         return pacotes
 
-    def atualizarPacote(self, destino, peso_novo=None, tamanho_novo=None, origem_nova=None) -> None:
+    def atualizar_pacote(self, destino, peso_novo=None, tamanho_novo=None, origem_nova=None) -> None:
         """
-        summary
-            Atualiza o peso e tamanho de um pacote com base no destino.
-        
-        parameters
-            destino : str
-                Destino do pacote a ser atualizado.
-            peso_novo : str
-                Novo peso do pacote.
-            tamanho_novo : str
-                Novo tamanho do pacote.
-            origem_nova : str
-                Parâmetro opcional para atualizar a origem
-        return
-            None
+        Atualiza as informações de um pacote com base no destino.
         """
-        self.garantir_conexao()  # Garante que a conexão está ativa
-        cursor = self.dbPostgre.cursor()
+        self.garantir_conexao()
+        cursor = self.db_postgre.cursor()
         try:
             cursor.execute("SELECT * FROM pacotes WHERE Destino = %s", (destino,))
             pacote = cursor.fetchone()
@@ -164,65 +122,41 @@ class Postgre:
             if origem_nova is not None:
                 cursor.execute("UPDATE pacotes SET Origem = %s WHERE Destino = %s", (origem_nova, destino))
             
-            self.dbPostgre.commit()
+            self.db_postgre.commit()
             print("Pacote atualizado com sucesso.")
         except Exception as e:
             print(f"Erro ao atualizar pacote: {e}")
-            self.dbPostgre.rollback()
+            self.db_postgre.rollback()
         finally:
             cursor.close()
 
-    def deletarPacote(self, destino) -> None:
+    def deletar_pacote(self, destino) -> None:
         """
-        summary
-            Remove um pacote da tabela com base no destino.
-        
-        parameters
-            destino : str
-                Destino do pacote a ser deletado.
-        
-        return
-            None
+        Remove um pacote da tabela com base no destino.
         """
-        self.garantir_conexao()  # Garante que a conexão está ativa
-        cursor = self.dbPostgre.cursor()
+        self.garantir_conexao()
+        cursor = self.db_postgre.cursor()
         try:
-            cursor.execute("""
-                DELETE FROM pacotes 
-                WHERE Destino = %s
-            """, (destino,))
-            self.dbPostgre.commit()
+            cursor.execute("DELETE FROM pacotes WHERE Destino = %s", (destino,))
+            self.db_postgre.commit()
             print("Pacote deletado com sucesso!")
         except Exception as e:
             print(f"Erro ao deletar pacote: {e}")
-            self.dbPostgre.rollback()
+            self.db_postgre.rollback()
         finally:
             cursor.close()
 
-    def fecharConexao(self) -> None:
+    def fechar_conexao(self) -> None:
         """
-        summary
-            Fecha a conexão com o banco de dados PostgreSQL.
-        
-        parameters
-            None
-        
-        return
-            None
+        Fecha a conexão com o banco de dados PostgreSQL.
         """
-        if self.dbPostgre:
-            self.dbPostgre.close()
+        if self.db_postgre:
+            self.db_postgre.close()
+
 
 def exibir_menu() -> None:
     """
-    summary
-        Exibe o menu principal do sistema para o usuário.
-    
-    parameters
-        None
-    
-    return
-        None
+    Exibe o menu principal do sistema para o usuário.
     """
     print("\n")
     print("=====================================")
@@ -235,43 +169,36 @@ def exibir_menu() -> None:
     print("5. Sair")
     print("=====================================")
 
+
 def main() -> None:
     """
-    summary
-        Função principal do programa. Controla o fluxo do sistema de pacotes.
-    
-    parameters
-        None
-    
-    return
-        None
+    Função principal do programa. Controla o fluxo do sistema de pacotes.
     """
     db = Postgre()
-    db.CriarTabela()  # Garante que a tabela exista no banco
-    
+    db.criar_tabela()
+
     while True:
         exibir_menu()
         opcao = input("Escolha uma opção: ")
         
-        if opcao == '1': # Inserir pacote
+        if opcao == '1':  # Inserir pacote
             destino = input("Digite o destino do pacote: ")
             origem = input("Digite a origem do pacote: ")
             peso = input("Digite o peso do pacote: ")
             tamanho = input("Digite o tamanho do pacote: ")
-            db.inserirPacote(destino, origem, peso, tamanho)
+            db.inserir_pacote(destino, origem, peso, tamanho)
             print("Pacote inserido com sucesso!")
 
-        elif opcao == '2': # Consultar pacotes
-            pacotes = db.consultarPacotes()
+        elif opcao == '2':  # Consultar pacotes
+            pacotes = db.consultar_pacotes()
             if pacotes:
                 print("Pacotes cadastrados:")
                 for pacote in pacotes:
-                    if (int(pacote[0]) % 1000 == 0):
-                        print(f"Destino: {pacote[0]}, Origem: {pacote[1]}, Peso: {pacote[2]}, Tamanho: {pacote[3]}")
+                    print(f"Destino: {pacote[0]}, Origem: {pacote[1]}, Peso: {pacote[2]}, Tamanho: {pacote[3]}")
             else:
                 print("Nenhum pacote encontrado.")
-                
-        elif opcao == '3': # Atualizar pacote
+
+        elif opcao == '3':  # Atualizar pacote
             destino = input("Digite o destino do pacote a ser atualizado: ")
             print("Escolha o que deseja atualizar:")
             print("1. Peso")
@@ -285,7 +212,6 @@ def main() -> None:
 
             peso_novo = tamanho_novo = origem_nova = None
 
-            # Atualiza os campos de acordo com a escolha do usuário
             if escolha == '1':
                 peso_novo = input("Digite o novo peso do pacote: ")
             elif escolha == '2':
@@ -309,21 +235,21 @@ def main() -> None:
                 print("Opção inválida. Tente novamente.")
                 continue
             
-            db.atualizarPacote(destino, peso_novo, tamanho_novo, origem_nova)
+            db.atualizar_pacote(destino, peso_novo, tamanho_novo, origem_nova)
 
-        elif opcao == '4': # Deletar pacote
+        elif opcao == '4':  # Deletar pacote
             destino = input("Digite o destino do pacote a ser deletado: ")
-            db.deletarPacote(destino)
+            db.deletar_pacote(destino)
             print("Pacote deletado com sucesso!")
 
-        elif opcao == '5': # Sair
-            db.fecharConexao()
+        elif opcao == '5':  # Sair
+            db.fechar_conexao()
             print("Conexão encerrada. Saindo do sistema...")
             break
 
-        else: # Opção inválida
+        else:
             print("Opção inválida. Tente novamente.")
 
-# Executa a função principal
+
 if __name__ == "__main__":
     main()
