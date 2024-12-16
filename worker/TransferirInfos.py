@@ -5,7 +5,7 @@ import os
 import redis.exceptions
 import threading
 from queue import Queue
-from library.transfer_info import tranferirinfos
+from library.transfer_info import transteferir_infos
 
 class Connections:
     """
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     transferencia.criar_tabela()
 
     # Passe o objeto `transferencia` corretamente
-    tranferirinfos(transferencia, start=1, end=1000001)
+    transteferir_infos(transferencia, start=1, end=1000001)
 
     conexoes.fechar_conexoes()

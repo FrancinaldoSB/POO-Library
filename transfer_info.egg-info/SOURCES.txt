@@ -1,4 +1,5 @@
 README.md
+pyproject.toml
 setup.py
 transfer_info.egg-info/PKG-INFO
 transfer_info.egg-info/SOURCES.txt

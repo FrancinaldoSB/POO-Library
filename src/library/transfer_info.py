@@ -1,7 +1,7 @@
 import threading
 from queue import Queue
 
-def criarLotes(data_transfer, start, end):
+def criar_lotes(data_transfer, start, end):
     """
     summary
         Cria lotes de dados para transferência e os coloca na fila de tarefas.
@@ -22,7 +22,7 @@ def criarLotes(data_transfer, start, end):
         batch_end = min(i + data_transfer.batch_size, end)  # Fim do lote, respeitando o limite 'end'
         data_transfer.task_queue.put((batch_start, batch_end))  # Coloca o lote na fila de tarefas.
 
-def tranferirinfos(data_transfer, start, end):
+def transteferir_infos(data_transfer, start, end):
     """
     summary
         Inicia o processo de transferência de dados com múltiplas threads.
@@ -38,7 +38,7 @@ def tranferirinfos(data_transfer, start, end):
     return
         None
     """
-    criarLotes(data_transfer, start, end)  # Cria os lotes e os coloca na fila.
+    criar_lotes(data_transfer, start, end)  # Cria os lotes e os coloca na fila.
     threads = []  # Lista para armazenar as threads.
 
     # Cria e inicia as threads
